@@ -23,10 +23,10 @@ css = '''
   padding: 0 1.5rem;
   color: #fff;
 }
-[data-testid="stFileUploaderDropzone"] div div::before {color:white; content:"Arraste e solte os arquivos aqui"}
-[data-testid="stFileUploaderDropzone"] div div span{display:none;}
-[data-testid="stFileUploaderDropzone"] div div::after {color:white; font-size: .8em; content:"Limite de 200MB por arquivo"}
-[data-testid="stFileUploaderDropzone"] div div small{display:none;}
+[data-testid="stFileUploadDropzone"] div div::before {color:white; content:"Arraste e solte os arquivos aqui"}
+[data-testid="stFileUploadDropzone"] div div span{display:none;}
+[data-testid="stFileUploadDropzone"] div div::after {color:white; font-size: .8em; content:"Limite de 200MB por arquivo"}
+[data-testid="stFileUploadDropzone"] div div small{display:none;}
 '''
 
 bot_template = '''
