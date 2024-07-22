@@ -10,7 +10,6 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from htmlTemplates import css, bot_template, user_template
 
-
 def get_pdf_text(pdf_docs):
     text = ""
     for pdf in pdf_docs:
@@ -70,18 +69,18 @@ def main():
     st.set_page_config(page_title="Leitor de PDF Licitações", page_icon=":books:")
     st.write(css, unsafe_allow_html=True)
     st.header("PDF Licitações :books:")
-    st.header("01. Coloque sua Chave API Key: ")
-    api_key_input = st.text_input(
-        "OpenAI API Key",
-        type="password",
-        placeholder="Cole sua Chave aqui (sk-...)",
-        help="Pode pegar sua API Key aqui: https://platform.openai.com/account/api-keys.",  # noqa: E501
-        value=os.environ.get("OPENAI_API_KEY", None)
-         or st.session_state.get("OPENAI_API_KEY", ""),
-        )
-    st.session_state["OPENAI_API_KEY"] = api_key_input
+  #  st.header("01. Coloque sua Chave API Key: ")
+  #  api_key_input = st.text_input(
+  #     "OpenAI API Key",
+  #      type="password",
+  #      placeholder="Cole sua Chave aqui (sk-...)",
+  #      help="Pode pegar sua API Key aqui: https://platform.openai.com/account/api-keys.",  # noqa: E501
+  #      value=os.environ.get("OPENAI_API_KEY", None)
+  #       or st.session_state.get("OPENAI_API_KEY", ""),
+  #      )
+  #  st.session_state["OPENAI_API_KEY"] = api_key_input
     
-    openai_api_key = st.session_state.get("OPENAI_API_KEY")
+  #  openai_api_key = st.session_state.get("OPENAI_API_KEY")
     
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
