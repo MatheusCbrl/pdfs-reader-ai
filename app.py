@@ -1,5 +1,5 @@
 import streamlit as st
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.embeddings import OpenAIEmbeddings
@@ -9,7 +9,6 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from htmlTemplates import css, bot_template, user_template
 
-
 def get_pdf_text(pdf_docs):
     text = ""
     for pdf in pdf_docs:
@@ -17,7 +16,6 @@ def get_pdf_text(pdf_docs):
         for page in pdf_reader.pages:
             text += page.extract_text()
     return text
-
 
 def get_text_chunks(text):
     text_splitter = CharacterTextSplitter(
@@ -29,13 +27,13 @@ def get_text_chunks(text):
     chunks = text_splitter.split_text(text)
     return chunks
 
-def get_vectorstore(text_chunks):
-    embeddings = OpenAIEmbeddings()
+def get_vectorstore(text_chunks, openai_api_key):
+    embeddings = OpenAIEmbeddings(api_key=openai_api_key)
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
 
-
-def get_conversation_chain(vectorstore):
+def get_conversation_chain(vectorstore ):
+   
     llm = ChatOpenAI()
 
     memory = ConversationBufferMemory(
@@ -46,7 +44,6 @@ def get_conversation_chain(vectorstore):
         memory=memory
     )
     return conversation_chain
-
 
 def handle_userinput(user_question):
     response = st.session_state.conversation({'question': user_question})
@@ -59,20 +56,13 @@ def handle_userinput(user_question):
         else:
             st.write(bot_template.replace(
                 "{{MSG}}", message.content), unsafe_allow_html=True)
-
-
+            
 def main():
-    load_dotenv()
+    #load_dotenv()
     st.set_page_config(page_title="Leitor de PDF Licitações",
                        page_icon=":books:")
     st.write(css, unsafe_allow_html=True)
     st.header("PDF Licitações :books:")
-    
-   # SENHA_LOGIN_APP = st.text_input("Login:", type="password")
-   # if not authenticate_api_key(SENHA_LOGIN_APP):
-   #     st.error("Senha Incorreta. Accesso negado!")
-   #     st.stop() 
-
     if "conversation" not in st.session_state:
         st.session_state.conversation = None
     if "chat_history" not in st.session_state:
@@ -85,47 +75,44 @@ def main():
             "2. Pergunte o que quiser sobre o documento💬\n"
         )
         st.markdown("---")
-        #st.header("01. Coloque sua Chave API Key: ")
-        #api_key_input = st.text_input(
-        #    "OpenAI API Key",
-        #    type="password",
-        #    placeholder="Cole sua Chave aqui (sk-...)",
-        #    help="Pode pegar sua API Key aqui: https://platform.openai.com/account/api-keys.",
-        #    key="file_api_key"
-        #)
-        #if not api_key_input:
-        #    st.warning("Não inseriu uma API, insira-a para continuar! ")
-        #st.markdown("---")
         st.markdown("# Sobre")
         with st.expander("Eng. IA 📖"):
             st.markdown("Matheus Cabral\n\n"
                     "+55 54 999307783. ")
- 
-    st.header("02. Arraste ou Carregue os Arquivos: ")
-    pdf_docs = st.file_uploader(label="Adicione seus PDFs aqui e clique em 'Processar'", accept_multiple_files=True)
-    if not pdf_docs:
-        st.info("Não inseriu um arquivo, insira-o para continuar! ")
+    # Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
+    # via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
+    openai_api_key = st.secrets['openai']["OPENAI_API_KEY"]
+    #openai_api_key = st.text_input(
+    #    "OpenAI API Key", 
+    #    type="password",
+    #    placeholder="Cole sua Chave aqui (sk-...)",
+    #    help="Pode pegar sua API Key aqui: https://platform.openai.com/account/api-keys."
+    #)
+    if not openai_api_key:
+        st.info("A Usa API key da OpenAI para contunuar.", icon="🗝️")
     else:
-        with st.spinner("Procesando... Pode demorar um pouco!"):
-        # get pdf text
-         raw_text = get_pdf_text(pdf_docs)
-        # get the text chunks
-         text_chunks = get_text_chunks(raw_text)
-        # create vector store
-         vectorstore = get_vectorstore(text_chunks)
-        # create conversation chain
-         st.session_state.conversation = get_conversation_chain(vectorstore)  
-    st.header("03. Pergunte sobre o documento que adicionou: ")    
-    user_question = st.text_input(" ",
-                                  help="Ex:. Quais as minhas licitações? : ",
-                                  placeholder="Digite e pressione 'Enter' "
-    )
-    
-    #if pdf_docs and user_question and not api_key_input:
-    #   st.info("Ops! Insira sua API ao lado para continuar")
-        
-    if pdf_docs and user_question:
-        handle_userinput(user_question)
-        
+        st.header("02. Arraste ou Carregue os Arquivos: ")
+        pdf_docs = st.file_uploader(label="Adicione seus PDFs aqui e clique em 'Processar'", accept_multiple_files=True)
+        if not pdf_docs:
+            st.info("Não inseriu um arquivo, insira-o para continuar! ")
+        else:
+            with st.spinner("Procesando... Pode demorar um pouco!"):
+            # get pdf text
+             raw_text = get_pdf_text(pdf_docs)
+            # get the text chunks
+             text_chunks = get_text_chunks(raw_text)
+            # create vector store
+             vectorstore = get_vectorstore(text_chunks, openai_api_key)
+            # create conversation chain
+             st.session_state.conversation = get_conversation_chain(vectorstore)
+             st.header("03. Pergunte sobre o documento que adicionou: ")
+             user_question = st.text_input(" ",
+                                           help="Ex:. Quais as minhas licitações? : ",
+                                           placeholder="Digite e pressione 'Enter' ")
+                 #if pdf_docs and user_question and not api_key_input:
+                 #st.info("Ops! Insira sua API ao lado para continuar")
+             if pdf_docs and user_question:
+                 handle_userinput(user_question)
+
 if __name__ == '__main__':
     main()
